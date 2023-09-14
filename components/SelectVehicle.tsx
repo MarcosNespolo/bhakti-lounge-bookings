@@ -40,6 +40,10 @@ export default function SelectVehicle() {
   }
 
   function verifyInterval() {
+    if (new Date(pickup) < new Date() || new Date(dropoff) < new Date()) {
+      setIsIntervalAvailable(false)
+      return
+    }
     for (const booking of unavailableDates) {
       if (new Date(pickup) < new Date(booking.min) && new Date(dropoff) > new Date(booking.max)) {
         setIsIntervalAvailable(false)
