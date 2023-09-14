@@ -72,9 +72,9 @@ export default function ListBookings() {
         : bookings && bookings.length > 0 && bookings.map(booking => (
           <div className="w-full flex flex-col bg-white shadow-md max-w-sm mt-4 gap-4 p-4 rounded-md border border-gray-50">
             <div className="flex flex-row gap-4">
-              <div className="flex items-center bg-gray-100 -mt-4 -ml-4 rounded-md shadow p-4">
+              <div className="flex items-center bg-gray-100 -mt-4 -ml-4 rounded-md shadow p-2 sm:p-4">
                 <img
-                  className='w-fit h-12 sm:h-16'
+                  className='w-fit h-10 sm:h-16'
                   src={booking.car.image}
                 />
               </div>
