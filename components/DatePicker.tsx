@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 
 type DatePickerType = {
+    id: string
     unavailableDates: { min: string, max: string }[]
     onChange: (newDate: string) => void
     dataMin?: string
     isAvailable?: boolean
 }
 
-export function DatePicker({ dataMin, unavailableDates, isAvailable = true, onChange }: DatePickerType) {
+export function DatePicker({ id, dataMin, unavailableDates, isAvailable = true, onChange }: DatePickerType) {
     const [selectedDate, setSelectedDate] = useState('');
 
     function isUnavailable(newDate: string) {
@@ -55,20 +56,15 @@ export function DatePicker({ dataMin, unavailableDates, isAvailable = true, onCh
         return dateSplit[0] + '-' + (+dateSplit[1] + 3).toString() + '-' + dateSplit[2]
     }
 
-    function openCalendar(){
-        document.getElementById('data')?.click()
-    }
-
     return (
-        <div className="relative" onClick={() => openCalendar()}>
+        <div className="relative">
             <input
                 type="datetime-local"
-                id="data"
+                id={`${id}-data`}
                 className='text-sm w-full h-10 border border-gray-200 text-gray-600 rounded-md p-2 mt-2 active:border-[#fab820] focus:border-[#fab820] focus:outline-none focus:ring-0'
                 name="data"
                 value={selectedDate}
                 onChange={handleChange}
-                onClick={() => openCalendar()}
                 min={dataMin ? dataMin : getTodayDate()}
                 max={getMaxDate(dataMin ? dataMin : getTodayDate())}
             />

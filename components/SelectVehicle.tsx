@@ -184,6 +184,7 @@ export default function SelectVehicle() {
               <div className='w-full'>
                 <p className='text-sm font-semibold'>Pick-up</p>
                 <DatePicker
+                  id="pickup"
                   onChange={newDate => setPickup(newDate)}
                   unavailableDates={unavailableDates}
                 />
@@ -191,6 +192,7 @@ export default function SelectVehicle() {
               <div>
                 <p className='text-sm font-semibold'>Drop-off</p>
                 <DatePicker
+                  id="dropoff"
                   dataMin={pickup ? pickup : ''}
                   isAvailable={isIntervalAvailable}
                   onChange={newDate => setDropoff(newDate)}
