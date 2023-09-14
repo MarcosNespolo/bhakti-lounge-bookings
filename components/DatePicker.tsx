@@ -57,7 +57,7 @@ export function DatePicker({ id, dataMin, unavailableDates, isAvailable = true, 
     }
 
     return (
-        <div className="relative">
+        <div className="relative w-full">
             <input
                 type="datetime-local"
                 id={`${id}-data`}
