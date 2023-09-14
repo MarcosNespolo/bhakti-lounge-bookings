@@ -136,7 +136,7 @@ export default function SelectVehicle() {
               <div className="flex flex-row gap-4">
                 <div className="flex items-center bg-gray-100 -mt-4 -ml-4 rounded-md shadow p-4">
                   <img
-                    className='w-fit h-16'
+                    className='w-fit h-12 sm:h-16'
                     src={vehicleOptions.find(vehicle => vehicle.id == vehicleSelected)?.image}
                   />
                 </div>
