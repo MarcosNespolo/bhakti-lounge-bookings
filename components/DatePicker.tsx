@@ -1,19 +1,31 @@
-import React, { useState } from 'react';
+import { getTodayDate } from '@/app/lib/expressions';
+import React, { useEffect, useState } from 'react';
 
 type DatePickerType = {
     id: string
-    unavailableDates: { min: string, max: string }[]
+    selectedDate?: string
+    unavailableDates?: { min: string, max: string }[]
     onChange: (newDate: string) => void
     dataMin?: string
     isAvailable?: boolean
+    showPastDates?: boolean
 }
 
-export function DatePicker({ id, dataMin, unavailableDates, isAvailable = true, onChange }: DatePickerType) {
-    const [selectedDate, setSelectedDate] = useState('');
+export function DatePicker({ id, selectedDate, dataMin, unavailableDates, isAvailable = true, showPastDates = false, onChange }: DatePickerType) {
+    const [newSelectedDate, setNewSelectedDate] = useState(selectedDate ? selectedDate : '');
+
+    useEffect(() => {
+        if (selectedDate) {
+            setNewSelectedDate(selectedDate)
+        }
+    }, [selectedDate])
 
     function isUnavailable(newDate: string) {
         if (!isAvailable) {
             return true
+        }
+        if (!unavailableDates) {
+            return false
         }
         const data = new Date(newDate)
         return unavailableDates.some(({ min, max }) => {
@@ -24,28 +36,12 @@ export function DatePicker({ id, dataMin, unavailableDates, isAvailable = true, 
     }
 
     function handleChange(e: any) {
-        setSelectedDate(e.target.value)
+        setNewSelectedDate(e.target.value)
         if (isUnavailable(e.target.value)) {
             onChange('')
         } else {
             onChange(e.target.value)
         }
-    };
-
-    function getTodayDate() {
-        const today = new Date();
-        return today.getFullYear() +
-            '-' +
-            (today.getMonth() + 1).toLocaleString('en-NZ', {
-                minimumIntegerDigits: 2,
-                useGrouping: false
-            }) +
-            '-' +
-            today.getDate().toLocaleString('en-NZ', {
-                minimumIntegerDigits: 2,
-                useGrouping: false
-            }) +
-            'T00:00'
     }
 
     function getMaxDate(minDate: string) {
@@ -61,14 +57,14 @@ export function DatePicker({ id, dataMin, unavailableDates, isAvailable = true, 
             <input
                 type="datetime-local"
                 id={`${id}-data`}
-                className='text-sm w-full h-10 border border-gray-200 text-gray-600 rounded-md p-2 mt-2 active:border-[#fab820] focus:border-[#fab820] focus:outline-none focus:ring-0'
+                className='text-sm w-full h-10 border border-gray-200 text-gray-600 rounded-md p-2 mt-2 active:border-primary focus:border-primary focus:outline-none focus:ring-0'
                 name="data"
-                value={selectedDate}
+                value={newSelectedDate}
                 onChange={handleChange}
-                min={dataMin ? dataMin : getTodayDate()}
-                max={getMaxDate(dataMin ? dataMin : getTodayDate())}
+                min={dataMin ? dataMin : showPastDates ? '' : getTodayDate()}
+                max={getMaxDate(dataMin ? dataMin : getTodayDate(true))}
             />
-            {isUnavailable(selectedDate) && (
+            {isUnavailable(newSelectedDate) && (
                 <p className='text-red-600 text-xs mt-1 ml-2.5'>Unavailable =(</p>
             )}
         </div>

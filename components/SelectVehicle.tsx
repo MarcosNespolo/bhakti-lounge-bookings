@@ -1,26 +1,13 @@
 
 "use client"
-import { createClientComponentClient, createServerComponentClient } from "@supabase/auth-helpers-nextjs"
-import { use, useEffect, useState } from "react"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
+import { useEffect, useState } from "react"
 import { ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { formatDate } from "./ListBookings"
 import DatePicker from "./DatePicker"
+import { VEHICLE_ID, vehicleOptions } from "@/app/lib/constants"
 
 export default function SelectVehicle() {
-  const VEHICLE_ID = {
-    CAR: 1,
-    VAN: 2
-  }
-  const vehicleOptions = [
-    {
-      id: VEHICLE_ID.CAR,
-      image: '/car.png'
-    },
-    {
-      id: VEHICLE_ID.VAN,
-      image: '/van.png'
-    }
-  ]
   const [vehicleSelected, setVehicleSelected] = useState<number>(VEHICLE_ID.CAR)
   const [reason, setReason] = useState<string>('')
   const [user, setUser] = useState<string>('')
@@ -32,15 +19,25 @@ export default function SelectVehicle() {
   const [isBooked, setIsBooked] = useState<boolean>(false)
   const [unavailableDates, setUnavailableDates] = useState<{ min: string, max: string }[]>([])
   const [isIntervalAvailable, setIsIntervalAvailable] = useState<boolean>(true)
+  const [isPickupAvailable, setPickupAvailable] = useState<boolean>(true)
 
   const supabase = createClientComponentClient()
 
   function isBookingDisabled() {
-    return !(pickup != '' && dropoff != '' && user != '')
+    return !(pickup != '' && dropoff != '' && user != '' && isIntervalAvailable && isPickupAvailable)
+  }
+
+
+  function verifyPickup() {
+    if (new Date(pickup) < new Date()) {
+      setPickupAvailable(false)
+      return
+    }
+    setPickupAvailable(true)
   }
 
   function verifyInterval() {
-    if (new Date(pickup) < new Date() || new Date(dropoff) < new Date()) {
+    if (new Date(dropoff) < new Date()) {
       setIsIntervalAvailable(false)
       return
     }
@@ -111,6 +108,10 @@ export default function SelectVehicle() {
   useEffect(() => {
     verifyInterval()
   }, [pickup, dropoff])
+
+  useEffect(() => {
+    verifyPickup()
+  }, [pickup])
 
   return (
     <div className="p-4 px-6 h-fit w-full rounded-lg bg-white shadow-md max-w-sm">
@@ -189,6 +190,7 @@ export default function SelectVehicle() {
                 <p className='text-sm font-semibold'>Pick-up</p>
                 <DatePicker
                   id="pickup"
+                  isAvailable={isPickupAvailable}
                   onChange={newDate => setPickup(newDate)}
                   unavailableDates={unavailableDates}
                 />
@@ -207,14 +209,14 @@ export default function SelectVehicle() {
                 <p className='text-sm font-semibold'>Name</p>
                 <input
                   type='text'
-                  className='text-sm border border-gray-200 w-full rounded-md p-2 mt-2 focus:border-[#fab820] focus:outline-none focus:ring-0'
+                  className='text-sm border border-gray-200 w-full rounded-md p-2 mt-2 focus:border-primary focus:outline-none focus:ring-0'
                   onChange={(newDate) => setUser(newDate.target.value)}
                 />
               </div>
               <div className='w-full flex-flex-row gap-2'>
                 <p className='text-sm font-semibold'>Reason</p>
                 <textarea
-                  className='text-sm border border-gray-200 w-full rounded-md p-2 mt-2 focus:border-[#fab820] focus:outline-none focus:ring-0'
+                  className='text-sm border border-gray-200 w-full rounded-md p-2 mt-2 focus:border-primary focus:outline-none focus:ring-0'
                   onChange={(newDate) => setReason(newDate.target.value)}
                 />
               </div>
