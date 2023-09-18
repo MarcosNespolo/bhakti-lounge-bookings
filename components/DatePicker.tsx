@@ -57,7 +57,7 @@ export function DatePicker({ id, selectedDate, dataMin, unavailableDates, isAvai
             <input
                 type="datetime-local"
                 id={`${id}-data`}
-                className='text-sm w-full h-10 border border-gray-200 text-gray-600 rounded-md p-2 mt-2 active:border-primary focus:border-primary focus:outline-none focus:ring-0'
+                className='text-sm w-full h-10 border border-gray-200 text-gray-600 rounded-md p-2 mt-2 hover:border-primary active:border-primary focus:border-primary focus:outline-none focus:ring-0'
                 name="data"
                 value={newSelectedDate}
                 onChange={handleChange}

@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import DatePicker from "./DatePicker"
 import { getNextMonthDate, getTodayDate } from "@/app/lib/expressions"
 import { vehicleOptions } from "@/app/lib/constants"
+import InputCodeModal from "./CancelModal"
 
 type CarType = {
   id: number
@@ -47,56 +48,9 @@ export default function ListBookings() {
   const [isFilterOn, setIsFilterOn] = useState<boolean>(false)
   const [filtersOn, setFiltersOn] = useState<number>(0)
   const [seeCanceled, setSeeCanceled] = useState<boolean>(false)
+  const [bookIdToCancel, setBookIdToCancel] = useState<string>('')
 
   useEffect(() => {
-    const getBookings = async () => {
-      setIsLoading(true)
-      let query = supabase
-        .from('bookings')
-        .select(' * , car(*)')
-        .order('pickup')
-        .in('car', vehiclesFilter)
-
-      if (!seeCanceled) {
-        query.eq('active', true)
-      }
-
-      if (user != '') {
-        setFiltersOn(filtersOn => filtersOn + 1)
-        query.ilike('user', `%${user}%`)
-      }
-
-      if (pickupDateFilter[0] != '') {
-        setFiltersOn(filtersOn => filtersOn + 1)
-        query.gt('pickup', pickupDateFilter[0])
-      }
-      if (pickupDateFilter[1] != '') {
-        setFiltersOn(filtersOn => filtersOn + 1)
-        query.lt('pickup', pickupDateFilter[1])
-      }
-      if (dropoffDateFilter[0] != '') {
-        setFiltersOn(filtersOn => filtersOn + 1)
-        query.gt('dropoff', dropoffDateFilter[0])
-      }
-      if (dropoffDateFilter[1] != '') {
-        setFiltersOn(filtersOn => filtersOn + 1)
-        query.lt('dropoff', dropoffDateFilter[1])
-      }
-
-      const { data, error: bookingsError } = await query
-
-      if (data) {
-        console.log(data)
-        setIsLoading(false)
-        setBookings(data)
-      }
-      if (bookingsError) {
-        console.log(bookingsError)
-        setIsLoading(false)
-        setError(bookingsError.message)
-      }
-    }
-
     setFiltersOn(0)
     getBookings()
   }, [pickupDateFilter, dropoffDateFilter, vehiclesFilter, user, seeCanceled])
@@ -109,8 +63,60 @@ export default function ListBookings() {
     }
   }
 
+  async function getBookings() {
+    setIsLoading(true)
+    let query = supabase
+      .from('bookings')
+      .select(' * , car(*)')
+      .order('pickup')
+      .in('car', vehiclesFilter)
+
+    if (!seeCanceled) {
+      query.eq('active', true)
+    }
+
+    if (user != '') {
+      setFiltersOn(filtersOn => filtersOn + 1)
+      query.ilike('user', `%${user}%`)
+    }
+
+    if (pickupDateFilter[0] != '') {
+      setFiltersOn(filtersOn => filtersOn + 1)
+      query.gt('pickup', pickupDateFilter[0])
+    }
+    if (pickupDateFilter[1] != '') {
+      setFiltersOn(filtersOn => filtersOn + 1)
+      query.lt('pickup', pickupDateFilter[1])
+    }
+    if (dropoffDateFilter[0] != '') {
+      setFiltersOn(filtersOn => filtersOn + 1)
+      query.gt('dropoff', dropoffDateFilter[0])
+    }
+    if (dropoffDateFilter[1] != '') {
+      setFiltersOn(filtersOn => filtersOn + 1)
+      query.lt('dropoff', dropoffDateFilter[1])
+    }
+
+    const { data, error: bookingsError } = await query
+
+    if (data) {
+      setIsLoading(false)
+      setBookings(data)
+    }
+    if (bookingsError) {
+      setIsLoading(false)
+      setError(bookingsError.message)
+    }
+  }
+
   return (
     <div className="flex flex-col p-4 h-fit w-full rounded-lg bg-white shadow-md max-w-sm">
+      <InputCodeModal
+        isOpen={bookIdToCancel != ''}
+        bookingId={bookIdToCancel}
+        closeModal={() => setBookIdToCancel('')}
+        onAction={() => getBookings()}
+      />
       <img
         className='w-40 mx-auto my-6'
         src={'/bhakti-logo.jpg'}
@@ -120,6 +126,7 @@ export default function ListBookings() {
         className={`
           flex items-center
           relative
+          z-10
           w-fit 
           p-2 gap-1 mb-2 ml-auto 
           shadow 
@@ -136,7 +143,7 @@ export default function ListBookings() {
         `}
       >
         {filtersOn > 0 &&
-          <p className="-top-3 -right-3 absolute flex items-center justify-center bg-red-400 text-white font-semibold w-5 h-5 rounded-full h-fit w-fit text-xs">
+          <p className="-top-3 -right-3 absolute flex items-center justify-center bg-red-400 text-white font-semibold w-5 h-5 rounded-full text-xs">
             {filtersOn}
           </p>
         }
@@ -170,7 +177,7 @@ export default function ListBookings() {
           </div>
           <div>
             <p className='text-sm font-semibold'>Pick-up</p>
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <DatePicker
                 id="pickup-start"
                 selectedDate={pickupDateFilter[0]}
@@ -187,7 +194,7 @@ export default function ListBookings() {
           </div>
           <div>
             <p className='text-sm font-semibold'>Drop-off</p>
-            <div className="flex flex-row gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <DatePicker
                 id="dropoff-start"
                 selectedDate={dropoffDateFilter[0]}
@@ -255,21 +262,20 @@ export default function ListBookings() {
             </div>
             {booking.active
               ? <button
-                onClick={() => setIsFilterOn(isFilterOn => !isFilterOn)}
+                onClick={() => setBookIdToCancel(booking.id)}
                 className={`
-                flex items-center
-                relative
-                w-fit 
-                p-2 gap-1 ml-auto 
-                shadow 
-                text-gray-600 text-sm font-medium 
-                rounded-lg 
-                text-gray-600
-                bg-white
-                border
-                border-gray-100
-                hover:border-red-400
-                hover:text-red-500
+                  flex items-center
+                  w-fit 
+                  p-2 gap-1 ml-auto 
+                  shadow 
+                  text-gray-600 text-sm font-medium 
+                  rounded-lg 
+                  text-gray-600
+                  bg-white
+                  border
+                  border-gray-100
+                  hover:border-red-400
+                  hover:text-red-500
               `}
               >
                 <NoSymbolIcon className="stroke-2 h-4 w-4" />
