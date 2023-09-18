@@ -124,9 +124,10 @@ export default function ListBookings() {
         className='w-40 mx-auto my-6'
         src={'/bhakti-logo.jpg'}
       />
-      <button
-        onClick={() => setIsFilterOn(isFilterOn => !isFilterOn)}
-        className={`
+      {!isLoading &&
+        <button
+          onClick={() => setIsFilterOn(isFilterOn => !isFilterOn)}
+          className={`
           flex items-center
           relative
           z-10
@@ -140,19 +141,20 @@ export default function ListBookings() {
           border-gray-100
           hover:border-primary
           ${isFilterOn
-            ? 'bg-gray-100 shadow-inner'
-            : 'bg-white'
-          }
+              ? 'bg-gray-100 shadow-inner'
+              : 'bg-white'
+            }
         `}
-      >
-        {filtersOn > 0 &&
-          <p className="-top-3 -right-3 absolute flex items-center justify-center bg-red-400 text-white font-semibold w-5 h-5 rounded-full text-xs">
-            {filtersOn}
-          </p>
-        }
-        <FunnelIcon className="stroke-2 h-4 w-4" />
-        Filters
-      </button>
+        >
+          {filtersOn > 0 &&
+            <p className="-top-3 -right-3 absolute flex items-center justify-center bg-red-400 text-white font-semibold w-5 h-5 rounded-full text-xs">
+              {filtersOn}
+            </p>
+          }
+          <FunnelIcon className="stroke-2 h-4 w-4" />
+          Filters
+        </button>
+      }
       {isFilterOn &&
         <div className="flex flex-col gap-4 mb-4 border border-gray-100 rounded-lg p-2">
           <div className='w-full flex-flex-row gap-2'>
