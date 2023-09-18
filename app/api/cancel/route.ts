@@ -5,14 +5,14 @@ import { cookies } from 'next/headers'
 export async function POST(request: Request) {
     const supabase = createRouteHandlerClient({ cookies })
     const { code, bookingId } = await request.json()
-    console.log( code, bookingId )
+
     const { count, error } = await supabase
         .from('code')
         .select('*', { count: "exact" })
         .eq('code', code)
 
     if (error) {
-        return NextResponse.json({error}, { status: 500 })
+        return NextResponse.json({ error }, { status: 500 })
     }
 
     if (count && count > 0) {
@@ -26,6 +26,6 @@ export async function POST(request: Request) {
         return NextResponse.json(result, { status: 200 });
     }
 
-    return NextResponse.json({message: 'Unable to cancel the booking. Please contact the manager.'}, { status: 200 })
+    return NextResponse.json({ message: 'Unable to cancel the booking. Please contact the manager.' }, { status: 200 })
 
 }
