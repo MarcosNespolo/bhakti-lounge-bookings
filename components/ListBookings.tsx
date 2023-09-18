@@ -41,7 +41,7 @@ export default function ListBookings() {
   const [bookings, setBookings] = useState<BookingType[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>('')
-  const [pickupDateFilter, setPickupDateFilter] = useState<string[]>([getTodayDate(true), getNextMonthDate()])
+  const [pickupDateFilter, setPickupDateFilter] = useState<string[]>([getTodayDate(), getNextMonthDate()])
   const [dropoffDateFilter, setDropoffDateFilter] = useState<string[]>(['', ''])
   const [vehiclesFilter, setVehiclesFilter] = useState<number[]>(vehicleOptions.map(vehicle => vehicle.id))
   const [user, setUser] = useState<string>('')
@@ -65,6 +65,8 @@ export default function ListBookings() {
 
   async function getBookings() {
     setIsLoading(true)
+    let filtersCount = 0
+
     let query = supabase
       .from('bookings')
       .select(' * , car(*)')
@@ -76,27 +78,28 @@ export default function ListBookings() {
     }
 
     if (user != '') {
-      setFiltersOn(filtersOn => filtersOn + 1)
+      filtersCount++
       query.ilike('user', `%${user}%`)
     }
 
     if (pickupDateFilter[0] != '') {
-      setFiltersOn(filtersOn => filtersOn + 1)
+      filtersCount++
       query.gt('pickup', pickupDateFilter[0])
     }
     if (pickupDateFilter[1] != '') {
-      setFiltersOn(filtersOn => filtersOn + 1)
+      filtersCount++
       query.lt('pickup', pickupDateFilter[1])
     }
     if (dropoffDateFilter[0] != '') {
-      setFiltersOn(filtersOn => filtersOn + 1)
+      filtersCount++
       query.gt('dropoff', dropoffDateFilter[0])
     }
     if (dropoffDateFilter[1] != '') {
-      setFiltersOn(filtersOn => filtersOn + 1)
+      filtersCount++
       query.lt('dropoff', dropoffDateFilter[1])
     }
 
+    setFiltersOn(filtersCount)
     const { data, error: bookingsError } = await query
 
     if (data) {
