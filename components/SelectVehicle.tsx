@@ -4,8 +4,10 @@ import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { useEffect, useState } from "react"
 import { ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
 import { formatDate } from "./ListBookings"
-import DatePicker from "./DatePicker"
 import { VEHICLE_ID, vehicleOptions } from "@/app/lib/constants"
+import Calendar from "./Calendar"
+import { PencilIcon } from "lucide-react"
+import { getTodayDate } from "@/app/lib/expressions"
 
 export default function SelectVehicle() {
   const [vehicleSelected, setVehicleSelected] = useState<number>(VEHICLE_ID.CAR)
@@ -17,37 +19,15 @@ export default function SelectVehicle() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [isLoadingBookings, setIsLoadingBookings] = useState<boolean>(false)
   const [isBooked, setIsBooked] = useState<boolean>(false)
-  const [unavailableDates, setUnavailableDates] = useState<{ min: string, max: string }[]>([])
-  const [isIntervalAvailable, setIsIntervalAvailable] = useState<boolean>(true)
-  const [isPickupAvailable, setPickupAvailable] = useState<boolean>(true)
+  const [bookedDates, setBookedDates] = useState<{ car: Number, min: string, max: string }[]>([])
+  const [unavailableDates, setUnavailableDates] = useState<{ car: Number, min: string, max: string }[]>([])
+  const [isOpenPickupCalendar, setIsOpenPickupCalendar] = useState<boolean>(false)
+  const [isOpenDropoffCalendar, setIsOpenDropoffCalendar] = useState<boolean>(false)
 
   const supabase = createClientComponentClient()
 
   function isBookingDisabled() {
-    return !(pickup != '' && dropoff != '' && user != '' && isIntervalAvailable && isPickupAvailable)
-  }
-
-
-  function verifyPickup() {
-    if (new Date(pickup) < new Date()) {
-      setPickupAvailable(false)
-      return
-    }
-    setPickupAvailable(true)
-  }
-
-  function verifyInterval() {
-    if (new Date(dropoff) < new Date()) {
-      setIsIntervalAvailable(false)
-      return
-    }
-    for (const booking of unavailableDates) {
-      if (new Date(pickup) < new Date(booking.min) && new Date(dropoff) > new Date(booking.max)) {
-        setIsIntervalAvailable(false)
-        return
-      }
-    }
-    setIsIntervalAvailable(true)
+    return !(pickup != '' && dropoff != '' && user != '')
   }
 
   async function setBooking() {
@@ -79,16 +59,33 @@ export default function SelectVehicle() {
   }
 
   useEffect(() => {
+    setPickup('')
+    setDropoff('')
+    setIsOpenDropoffCalendar(false)
+    setIsOpenPickupCalendar(false)
+    setUnavailableDates(bookedDates.filter(booking => booking.car == vehicleSelected))
+  }, [vehicleSelected])
+
+  useEffect(() => {
     const getBookings = async () => {
       setIsLoadingBookings(true)
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
         .select(' * , car(*)')
         .order('pickup')
+        .gt('dropoff', getTodayDate())
+
       if (bookingsData) {
-        console.log(bookingsData)
-        setUnavailableDates(bookingsData.map(booking => {
+        setBookedDates(bookingsData.map(booking => {
           return {
+            car: booking.car.id,
+            min: booking.pickup,
+            max: booking.dropoff
+          }
+        }))
+        setUnavailableDates(bookingsData.filter(booking => booking.car.id == vehicleSelected).map(booking => {
+          return {
+            car: booking.car.id,
             min: booking.pickup,
             max: booking.dropoff
           }
@@ -96,7 +93,6 @@ export default function SelectVehicle() {
         setIsLoadingBookings(false)
       }
       if (bookingsError) {
-        console.log(bookingsError)
         setIsLoadingBookings(false)
         setError(bookingsError.message)
       }
@@ -105,13 +101,19 @@ export default function SelectVehicle() {
     getBookings()
   }, [])
 
-  useEffect(() => {
-    verifyInterval()
-  }, [pickup, dropoff])
-
-  useEffect(() => {
-    verifyPickup()
-  }, [pickup])
+  function getUnavailableDates() {
+    if (!unavailableDates) {
+      return []
+    }
+    const nextBooking = unavailableDates.find((date) => {
+      const minDate = new Date(date.min);
+      return minDate > new Date(pickup);
+    })?.min
+    return [...unavailableDates,
+    { min: '0000-00-00T00:00:00', max: pickup },
+    { min: nextBooking ? nextBooking : '9999-00-00T00:00:00', max: '9999-00-00T00:00:00' }
+    ]
+  }
 
   return (
     <div className="p-4 px-6 h-fit w-full rounded-lg bg-white shadow-md max-w-sm">
@@ -172,7 +174,7 @@ export default function SelectVehicle() {
           </>
           :
           <>
-            <div className='flex flex-row p-1 justify-between rounded-lg bg-[#e4e8c5] shadow-inner'>
+            <div className='flex flex-row p-1 justify-between rounded-lg bg-secondary shadow-inner'>
               {vehicleOptions.map(vehicle => (
                 <div
                   key={vehicle.id}
@@ -187,23 +189,57 @@ export default function SelectVehicle() {
             </div>
             <div className='flex flex-col gap-4 mt-8 w-full'>
               <div className='w-full'>
-                <p className='text-sm font-semibold'>Pick-up</p>
-                <DatePicker
-                  id="pickup"
-                  isAvailable={isPickupAvailable}
-                  onChange={newDate => setPickup(newDate)}
-                  unavailableDates={unavailableDates}
-                />
+                <p className='text-sm font-semibold mb-1'>Pick-up</p>
+                {isOpenPickupCalendar
+                  ?
+                  <Calendar
+                    id="pickup"
+                    onAction={newDate => {
+                      setPickup(newDate.toISOString())
+                      setIsOpenPickupCalendar(false)
+                      setIsOpenDropoffCalendar(true)
+                    }}
+                    unavailableDates={unavailableDates}
+                  />
+                  :
+                  <div className="flex flex-row border rounded-lg itemx-center">
+                    <p className="w-full flex items-center text-sm pl-3 text-gray-700 bg-gray-50">
+                      {formatDate(pickup)}
+                    </p>
+                    <button
+                      className={`h-full px-3 flex flex-row items-center justify-center relative py-2 rounded-r-lg text-white opacity-90 shadow whitespace-nowrap bg-[#eba258] hover:opacity-100`}
+                      onClick={() => setIsOpenPickupCalendar(true)}
+                    >
+                      <p><PencilIcon className="h-4 w-4" /></p>
+                    </button>
+                  </div>
+                }
               </div>
               <div>
                 <p className='text-sm font-semibold'>Drop-off</p>
-                <DatePicker
-                  id="dropoff"
-                  dataMin={pickup ? pickup : ''}
-                  isAvailable={isIntervalAvailable}
-                  onChange={newDate => setDropoff(newDate)}
-                  unavailableDates={unavailableDates}
-                />
+                {isOpenDropoffCalendar
+                  ?
+                  <Calendar
+                    id="dropoff"
+                    onAction={newDate => {
+                      setDropoff(newDate.toISOString())
+                      setIsOpenDropoffCalendar(false)
+                    }}
+                    unavailableDates={getUnavailableDates()}
+                  />
+                  :
+                  <div className="flex flex-row border rounded-lg itemx-center">
+                    <p className="w-full flex items-center text-sm pl-3 text-gray-700 bg-gray-50">
+                      {formatDate(dropoff)}
+                    </p>
+                    <button
+                      className={`h-full px-3 flex flex-row items-center justify-center relative py-2 rounded-r-lg text-white opacity-90 shadow whitespace-nowrap bg-[#eba258] hover:opacity-100`}
+                      onClick={() => setIsOpenDropoffCalendar(true)}
+                    >
+                      <p className="flex flex-row items-center gap-2 text-sm"><PencilIcon className="h-4 w-4" /></p>
+                    </button>
+                  </div>
+                }
               </div>
               <div className='w-full flex-flex-row gap-2'>
                 <p className='text-sm font-semibold'>Name</p>

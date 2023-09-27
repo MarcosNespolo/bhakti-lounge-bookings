@@ -8,6 +8,7 @@ module.exports = {
     extend: {
       colors: {
         primary: '#fab820',
+        secondary: '#e4e8c5',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         btn: {

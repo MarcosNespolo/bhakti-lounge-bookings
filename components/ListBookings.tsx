@@ -27,6 +27,9 @@ type BookingType = {
 }
 
 export function formatDate(timestamp: string) {
+  if(!timestamp){
+    return ''
+  }
   const date = new Date(timestamp)
   const dateFormatted = date.toLocaleDateString('en-NZ', {
     hour: '2-digit',

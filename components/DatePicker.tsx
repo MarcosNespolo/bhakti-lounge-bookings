@@ -53,7 +53,7 @@ export function DatePicker({ id, selectedDate, dataMin, unavailableDates, isAvai
     }
 
     return (
-        <div className="relative w-full">
+        <div id={id} className="relative w-full">
             <input
                 type="datetime-local"
                 id={`${id}-data`}
