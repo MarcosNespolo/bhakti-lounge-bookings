@@ -7,6 +7,7 @@ import DatePicker from "./DatePicker"
 import { getNextMonthDate, getTodayDate } from "@/app/lib/expressions"
 import { vehicleOptions } from "@/app/lib/constants"
 import InputCodeModal from "./CancelModal"
+import InsertCodeModal from "./InsertCodeModal"
 
 type CarType = {
   id: number
@@ -15,7 +16,7 @@ type CarType = {
   image: string
 }
 
-type BookingType = {
+export type BookingType = {
   id: string
   created_at: string
   car: CarType
@@ -27,7 +28,7 @@ type BookingType = {
 }
 
 export function formatDate(timestamp: string) {
-  if(!timestamp){
+  if (!timestamp) {
     return ''
   }
   const date = new Date(timestamp)
@@ -42,18 +43,22 @@ export function formatDate(timestamp: string) {
 export default function ListBookings() {
   const supabase = createClientComponentClient()
   const [bookings, setBookings] = useState<BookingType[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>('')
   const [pickupDateFilter, setPickupDateFilter] = useState<string[]>([getTodayDate(), getNextMonthDate()])
   const [dropoffDateFilter, setDropoffDateFilter] = useState<string[]>(['', ''])
   const [vehiclesFilter, setVehiclesFilter] = useState<number[]>(vehicleOptions.map(vehicle => vehicle.id))
   const [user, setUser] = useState<string>('')
   const [isFilterOn, setIsFilterOn] = useState<boolean>(false)
-  const [filtersOn, setFiltersOn] = useState<number>(0)
+  const [filtersOn, setFiltersOn] = useState<number>(3)
   const [seeCanceled, setSeeCanceled] = useState<boolean>(false)
   const [bookIdToCancel, setBookIdToCancel] = useState<string>('')
+  const [code, setCode] = useState<string>('')
 
   useEffect(() => {
+    if(code == ''){
+      return
+    }
     setFiltersOn(0)
     getBookings()
   }, [pickupDateFilter, dropoffDateFilter, vehiclesFilter, user, seeCanceled])
@@ -122,6 +127,10 @@ export default function ListBookings() {
         bookingId={bookIdToCancel}
         closeModal={() => setBookIdToCancel('')}
         onAction={() => getBookings()}
+      />
+      <InsertCodeModal
+        isOpen={code == ''}
+        onAction={(code, bookings) => { setCode(code); setBookings(bookings) }}
       />
       <img
         className='w-40 mx-auto my-6'
