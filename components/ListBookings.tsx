@@ -32,7 +32,7 @@ export function formatDate(timestamp: string) {
     return ''
   }
   const date = new Date(timestamp)
-  const dateFormatted = date.toLocaleDateString('en-NZ', {
+  const dateFormatted = date.toLocaleDateString(undefined, {
     hour: '2-digit',
     minute: '2-digit'
   })
@@ -80,6 +80,7 @@ export default function ListBookings() {
       .select(' * , car(*)')
       .order('pickup')
       .in('car', vehiclesFilter)
+      .not('user', 'is', '')
 
     if (!seeCanceled) {
       query.eq('active', true)

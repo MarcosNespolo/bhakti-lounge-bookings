@@ -7,7 +7,7 @@ import { formatDate } from "./ListBookings"
 import { VEHICLE_ID, vehicleOptions } from "@/app/lib/constants"
 import Calendar from "./Calendar"
 import { PencilIcon } from "lucide-react"
-import { getTodayDate } from "@/app/lib/expressions"
+import { getTodayDate, toISOStringWithoutTimezone } from "@/app/lib/expressions"
 
 export default function SelectVehicle() {
   const [vehicleSelected, setVehicleSelected] = useState<number>(VEHICLE_ID.CAR)
@@ -195,7 +195,7 @@ export default function SelectVehicle() {
                   <Calendar
                     id="pickup"
                     onAction={newDate => {
-                      setPickup(newDate.toISOString())
+                      setPickup(toISOStringWithoutTimezone(newDate))
                       setIsOpenPickupCalendar(false)
                       setIsOpenDropoffCalendar(true)
                     }}
@@ -222,7 +222,7 @@ export default function SelectVehicle() {
                   <Calendar
                     id="dropoff"
                     onAction={newDate => {
-                      setDropoff(newDate.toISOString())
+                      setDropoff(toISOStringWithoutTimezone(newDate))
                       setIsOpenDropoffCalendar(false)
                     }}
                     unavailableDates={getUnavailableDates()}
