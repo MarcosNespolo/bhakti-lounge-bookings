@@ -79,8 +79,8 @@ export default function ListBookings() {
       .from('bookings')
       .select(' * , car(*)')
       .order('pickup')
+      .neq('user', '')
       .in('car', vehiclesFilter)
-      .not('user', 'is', '')
 
     if (!seeCanceled) {
       query.eq('active', true)
