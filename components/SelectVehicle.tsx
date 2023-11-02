@@ -76,7 +76,7 @@ export default function SelectVehicle() {
         .gt('dropoff', getTodayDate())
 
       if (bookingsData) {
-        setBookedDates(bookingsData.map(booking => {
+        setBookedDates(bookingsData.filter(booking => booking.active).map(booking => {
           return {
             car: booking.car.id,
             min: booking.pickup,
