@@ -83,7 +83,7 @@ export default function SelectVehicle() {
             max: booking.dropoff
           }
         }))
-        setUnavailableDates(bookingsData.filter(booking => booking.car.id == vehicleSelected).map(booking => {
+        setUnavailableDates(bookingsData.filter(booking => booking.car.id == vehicleSelected && booking.active).map(booking => {
           return {
             car: booking.car.id,
             min: booking.pickup,
