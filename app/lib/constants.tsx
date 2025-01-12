@@ -1,6 +1,7 @@
 export const VEHICLE_ID = {
     CAR: 1,
-    VAN: 2
+    VAN: 2,
+    MINIVAN: 3
 }
 
 export const vehicleOptions = [
@@ -13,5 +14,10 @@ export const vehicleOptions = [
         id: VEHICLE_ID.VAN,
         name: 'Van',
         image: '/van.png'
+    },
+    {
+        id: VEHICLE_ID.MINIVAN,
+        name: 'Minivan',
+        image: '/minivan.png'
     }
 ]

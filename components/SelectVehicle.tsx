@@ -208,7 +208,7 @@ export default function SelectVehicle() {
                     : "bg-transparent opacity-60 hover:shadow hover:bg-white/30"
                 }`}
               >
-                <img className="h-16" src={vehicle.image} />
+                <img className="h-16 w-auto object-contain" src={vehicle.image} />
               </div>
             ))}
           </div>
