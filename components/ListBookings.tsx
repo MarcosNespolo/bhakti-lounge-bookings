@@ -180,7 +180,7 @@ export default function ListBookings() {
             />
           </div>
           <div className="flex flex-row gap-4">
-            {vehicleOptions.map((vehicle) => (
+            {vehicleOptions?.map((vehicle) => (
               <p
                 className="flex flex-row gap-2 text-sm font-semibold cursor-pointer hover:opacity-80"
                 onClick={() => onChangeVehiclesFilter(vehicle.id)}

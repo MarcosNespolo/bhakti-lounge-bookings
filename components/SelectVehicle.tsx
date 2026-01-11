@@ -13,7 +13,7 @@ import {
 
 export default function SelectVehicle() {
   const [vehicleSelected, setVehicleSelected] = useState<number>(
-    VEHICLE_ID.CAR
+    VEHICLE_ID.VAN
   );
   const [reason, setReason] = useState<string>("");
   const [user, setUser] = useState<string>("");
@@ -143,7 +143,7 @@ export default function SelectVehicle() {
   }
 
   return (
-    <div className="p-4 px-6 h-fit w-full rounded-lg bg-white shadow-md max-w-sm">
+    <div className="p-4 px-6 h-fit w-full rounded-lg bg-white shadow-md max-w-xs">
       <img className="w-40 mx-auto my-6" src={"/bhakti-logo.jpg"} />
       {isLoadingBookings ? (
         <ArrowPathIcon
@@ -198,7 +198,7 @@ export default function SelectVehicle() {
       ) : (
         <>
           <div className="flex flex-row p-1 justify-between rounded-lg bg-secondary shadow-inner">
-            {vehicleOptions.map((vehicle) => (
+            {vehicleOptions?.filter((vehicle) => vehicle.enabled)?.map((vehicle) => (
               <div
                 key={vehicle.id}
                 onClick={() => setVehicleSelected(vehicle.id)}
